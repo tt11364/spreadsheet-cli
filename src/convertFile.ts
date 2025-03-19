@@ -96,13 +96,15 @@ const compareFiles = async (file1: string, file2: string) => {
 
     return {
       Model: finalName,
+      Manufacturer: manufacturer,
       Model_Normalized: normalizeModel(finalName),
-      Device: row.Device || ''
+      Device: row.Device || "",
     };
   });
 
   const missingDevices = devices2.filter(
-    ({ Model_Normalized }) => !devices1.some(({ Device }) => Device === Model_Normalized)
+    ({ Model_Normalized }) =>
+      !devices1.some(({ Device }) => Device === Model_Normalized)
   );
 
   if (missingDevices.length > 0) {
@@ -120,6 +122,11 @@ const exportXLSX = async (missingDevices: MissingDevice[]) => {
     {
       header: "Model",
       key: "Model",
+      width: 40,
+    },
+    {
+      header: "Manufacturer",
+      key: "Manufacturer",
       width: 40,
     },
     {
@@ -144,6 +151,6 @@ const exportXLSX = async (missingDevices: MissingDevice[]) => {
 
   log.success(`Missing devices exported to ${savePath}`);
 
-  outro('Process finalized')
+  outro("Process finalized");
 };
 export { getFiles, readCSV, compareFiles };
