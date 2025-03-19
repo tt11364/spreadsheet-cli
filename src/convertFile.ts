@@ -62,6 +62,20 @@ const readCSV = async (file: string, isACM: boolean = false) => {
   return rows;
 };
 
+const writeCSV = async (filePath: string, data: any) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Sheet 1");
+
+  const headers = Object.keys(data[0]);
+  worksheet.columns = headers.map((header) => ({ header, key: header }));
+
+  data.forEach((row: Row) => {
+    worksheet.addRow(row);
+  });
+
+  await workbook.csv.writeFile(filePath);
+};
+
 const compareFiles = async (file1: string, file2: string) => {
   const s = spinner();
   s.start("Reading CSV files...");
@@ -73,23 +87,46 @@ const compareFiles = async (file1: string, file2: string) => {
 
   const devices1 = (await data1).map((row: Row) => {
     const deviceName = normalizeModel(row["Device Name"] || "");
+    const manufacturer = row.Manufacturer?.toLowerCase()
+
+    // switch (manufacturer) {
+    //   case "SHARP":
+    //     // Normalización específica para SHARP
+    //     deviceName = deviceName.includes(manufacturer)
+    //     ? deviceName
+    //     : normalizeModel(`${manufacturer.toLowerCase()}${row["Device Name"]}`);
+    //     break;
+    // }
+
+    const finalName: string = deviceName.includes(manufacturer!)
+      ? deviceName
+      : normalizeModel(`${manufacturer}${deviceName}`);
+
     return {
-      Device: deviceName.trim().toLowerCase(),
+      Device: finalName.toLowerCase().trim()
     };
   });
 
   const devices2: MissingDevice[] = (await data2).map((row: Row) => {
-    let manufacturer = row.Manufacturer?.trim() || "";
-    const modelName = row["Model Name"] || "";
+    let manufacturer = row.Manufacturer?.trim();
+    let modelName = row["Model Name"]?.trim();
 
     switch (manufacturer) {
       case "Redmi":
       case "POCO":
         manufacturer = "Xiaomi";
+      // break;
+      case "Motorola":
+        modelName = modelName?.replace(/\((\d{4})\)/, "- $1").trim();
+      case "Nothing":
+        modelName = modelName?.replace(/\((\d+)\)/g, " $1").trim();
     }
 
-    const finalName: string = modelName.includes(manufacturer)
-      ? modelName
+    const modelLower = modelName?.toLowerCase();
+    const manufacturerLower = manufacturer?.toLowerCase();
+
+    const finalName: string = modelLower!.includes(manufacturerLower!)
+      ? modelName!
       : `${manufacturer} ${row["Model Name"]}`;
 
     return {
@@ -106,6 +143,8 @@ const compareFiles = async (file1: string, file2: string) => {
   );
 
   if (missingDevices.length > 0) {
+    await writeCSV(`${filePath}/modified_file1.csv`, devices1);
+    await writeCSV(`${filePath}/modified_file2.csv`, devices2);
     exportXLSX(missingDevices);
   } else {
     log.success("All devices in the second CSV are present in the first.");
@@ -145,6 +184,9 @@ const exportXLSX = async (missingDevices: MissingDevice[]) => {
 
   const savePath = `${filePath}/missing_devices.xlsx`;
 
+  worksheet.autoFilter = 'A1:D1';
+
+  // await workbook.csv.writeFile(savePath);
   await workbook.xlsx.writeFile(savePath);
 
   log.success(`Missing devices exported to ${savePath}`);
