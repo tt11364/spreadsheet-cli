@@ -82,12 +82,10 @@ const compareFiles = async (file1: string, file2: string) => {
     let manufacturer = row.Manufacturer?.trim() || "";
     const modelName = row["Model Name"] || "";
 
-    // if (manufacturer === "xiaomi") {
-    //   manufacturer = "";
-    // }
-
-    if (manufacturer === "poco" || manufacturer === "redmi") {
-      manufacturer = "xiaomi";
+    switch (manufacturer) {
+      case "Redmi":
+      case "POCO":
+        manufacturer = "Xiaomi";
     }
 
     const finalName: string = modelName.includes(manufacturer)
