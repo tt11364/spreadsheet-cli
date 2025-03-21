@@ -7,13 +7,13 @@ const compareFiles = async (file1: string, file2: string) => {
   const s = spinner();
   s.start("Reading CSV files...");
 
-  const data1 = readCSV(file1, true);
-  const data2 = readCSV(file2, false);
+  const data1 = await readCSV(file1, true);
+  const data2 = await readCSV(file2, false);
 
   s.stop("CSV Files read correctly!");
 
-  const devices1 = processDevices1(await data1);
-  const devices2 = processDevices2(await data2);
+  const devices1 = processDevices1(data1);
+  const devices2 = processDevices2(data2);
 
   const missingDevices = devices2.filter(
     ({ Model_Normalized }) =>
@@ -21,6 +21,7 @@ const compareFiles = async (file1: string, file2: string) => {
   );
 
   if (missingDevices.length > 0) {
+    log.info(`${devices1.length} | ${devices2.length} | ${missingDevices.length}`);
     await writeCSV(`${filePath}/modified_file1.csv`, devices1);
     await writeCSV(`${filePath}/modified_file2.csv`, devices2);
     await exportXLSX(missingDevices);

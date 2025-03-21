@@ -18,11 +18,13 @@ const exportXLSX = async (missingDevices: MissingDevice[]) => {
     worksheet.addRow(device);
   });
 
-  const savePath = `${filePath}/missing_devices.xlsx`;
+  // const savePath = `${filePath}/missing_devices.xlsx`;
+  const savePath = `${filePath}/missing_devices.csv`;
 
   worksheet.autoFilter = "A1:D1";
 
-  await workbook.xlsx.writeFile(savePath);
+  // await workbook.xlsx.writeFile(savePath);
+  await workbook.csv.writeFile(savePath);
 
   log.success(`Missing devices exported to ${savePath}`);
   outro("Process finalized");
