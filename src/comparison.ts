@@ -21,9 +21,10 @@ const compareFiles = async (file1: string, file2: string) => {
   );
 
   if (missingDevices.length > 0) {
-    log.info(`${devices1.length} | ${devices2.length} | ${missingDevices.length}`);
-    await writeCSV(`${filePath}/modified_file1.csv`, devices1);
-    await writeCSV(`${filePath}/modified_file2.csv`, devices2);
+    log.step(`Google Play Console: ${devices2.length}`);
+    log.step(`Devices not in ACM Testing file: ${missingDevices.length}`);
+    await writeCSV(`${filePath}/acm.csv`, devices1);
+    await writeCSV(`${filePath}/googleplay.csv`, devices2);
     await exportXLSX(missingDevices);
   } else {
     log.success("All devices in the second CSV are present in the first.");

@@ -8,9 +8,7 @@ const handleModelName = (modelName: string, manufacturer: string) => {
       manufacturer = "Xiaomi";
       break
     case "Motorola":
-      console.log(modelName);
       modelName = modelName?.replace(/\s-\s(\d{4})/, " ($1)").trim();
-      console.log(modelName);
       break;
     case "Nothing":
       modelName = modelName?.replace(/\((\d+)\)/g, " $1").trim();
